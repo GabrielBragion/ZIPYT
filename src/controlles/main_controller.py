@@ -2,6 +2,8 @@ from pathlib import Path
 import os
 from ..models.compressor.tar_compressor import TarCompressor
 from ..models.compressor.gz_compressor import GzCompressor
+from ..models.encryptor.encryptor import Encryptor
+from ..models.compressor.zip_compressor import ZipCompressor
 
 class MainController:
     def __init__(self, view):
@@ -14,6 +16,7 @@ class MainController:
         self.view.btn_load.clicked.connect(self.load_files)
         self.view.file_dropped.connect(self.add_files)
         self.view.select_method.currentTextChanged.connect(self.update_ui_controls)
+        self.view.select_compress.currentTextChanged.connect(self.check_secondary_combobox)
         self.view.btn_exec.clicked.connect(self.compress_files)
 
     def update_ui_controls(self, selected_format):
@@ -63,9 +66,14 @@ class MainController:
             self.view.select_compress.show()
 
             # Remove opção Nenhum que não é usada no ZIP
-            index = self.view.select_compress.findText("Nenhum")
-            if index != -1:
-                self.view.select_compress.removeItem(index)
+            index_nenhum = self.view.select_compress.findText("Nenhum")
+            index_gzip = self.view.select_compress.findText("GZIP")
+
+            if index_nenhum != -1:
+                self.view.select_compress.removeItem(index_nenhum)
+
+            if index_gzip != -1:
+                self.view.select_compress.removeItem(index_gzip)
 
             # Volta a adicionar a opção Padrão que possa ter sido removida quando mudou o metodo
             self.view.select_compress.insertItem(0, "Padrão")
@@ -136,7 +144,9 @@ class MainController:
 
     def load_files(self):
         init_dir = self.view.input_files.text() or str(Path.home())
-        self.view.input_files.setText(init_dir)  # Atualiza o input_files com o diretório inicial
+        self.view.input_files.setText(
+            init_dir
+        )  # Atualiza o input_files com o diretório inicial
         files, _ = self.view.open_file_dialog(init_dir)
 
         if files:
@@ -149,6 +159,7 @@ class MainController:
 
         self.add_files(files)
 
+
     def compress_files(self):
         """
         Método para comprimir os arquivos selecionados.
@@ -159,16 +170,46 @@ class MainController:
                 return
 
             selected_format = self.view.select_method.currentText()
+            selected_compress = self.view.select_compress.currentText()
+            password = self.view.input_password.text()
+            compression_level = self.view.slider_level.value()
+
             if selected_format == "TAR":
                 # Usa o diretório selecionado para criar o arquivo TAR
                 archive_name = os.path.join(self.selected_dir, "meu_arquivo.tar")
                 compressor = TarCompressor(archive_name)
                 compressor.create_tar(list(self._files))
+
+                if selected_compress == "GZIP":
+                    gz_archive_name = f"{archive_name}.gz"
+                    compressor = GzCompressor(archive_name)
+                    compressor.create_gz(archive_name)
+                    os.remove(archive_name)  # Remove o arquivo TAR original após criar o GZ
+
+                    if password:
+                        encryptor = Encryptor(password)
+                        encryptor.encrypt_file(gz_archive_name)
+                        os.remove(gz_archive_name)  # Remove o arquivo TAR.GZ original após criar o TAR.GZ.ENC
+
             elif selected_format == "GZ":
                 for file in self._files:
                     compressor = GzCompressor(file)
-                    compressor.create_gz(file)
-            # Adicione lógica para outros formatos de compressão aqui
+                    gz_file = compressor.create_gz(file)
+
+                    if password:
+                        encryptor = Encryptor(password)
+                        encryptor.encrypt_file(gz_file)
+                        os.remove(gz_file)  # Remove o arquivo GZ original após criar o GZ.ENC
+
+            elif selected_format == "ZIP":
+                # Usa o diretório selecionado para criar o arquivo ZIP
+                archive_name = os.path.join(self.selected_dir, "meu_arquivo.zip")
+                compressor = ZipCompressor(archive_name, 
+                                           compression_method=selected_compress, 
+                                           compression_level=compression_level, 
+                                           password=password
+                                           )
+                compressor.create_zip(list(self._files))
 
             # Exclui os arquivos originais se a opção estiver marcada
             self.delete_original_files(self._files)
@@ -180,14 +221,25 @@ class MainController:
 
             # Mostra a mensagem de sucesso
             self.view.show_message("Sucesso", "Arquivos comprimidos com sucesso!")
-            
+
         except Exception as e:
             self.view.show_message("Erro", f"Ocorreu um erro durante a compressão: {str(e)}")
-            
+
     def delete_original_files(self, files):
         if self.view.checkbox_delete.isChecked():
             for file in files:
                 try:
                     os.remove(file)
                 except Exception as e:
-                    self.view.show_message("Erro", f"Não foi possível excluir o arquivo {file}: {str(e)}")
+                    self.view.show_message(
+                        "Erro", f"Não foi possível excluir o arquivo {file}: {str(e)}"
+                    )
+
+    def encrypt_file(self, file):
+        # Criptografa o arquivo se uma senha for fornecida
+        password = self.view.input_password.text()
+        password_confirm = self.view.input_repeat.text()
+        
+        if password == password_confirm and password != "":
+            encryptor = Encryptor(password)
+            encryptor.encrypt_file(file)
