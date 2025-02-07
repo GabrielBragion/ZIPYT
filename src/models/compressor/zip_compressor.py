@@ -2,7 +2,7 @@ import zipfile
 import os
 
 class ZipCompressor:
-    def __init__(self, archive_name, compression_method='deflate', compression_level=5, password=None):
+    def __init__(self, archive_name, compression_method, compression_level, password=None):
         self.archive_name = archive_name
         self.compression_method = compression_method
         self.compression_level = compression_level

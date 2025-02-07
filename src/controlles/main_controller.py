@@ -246,7 +246,8 @@ class MainController:
 
             elif selected_format == "ZIP":
                 # Usa o diretório selecionado para criar o arquivo ZIP
-                archive_name = os.path.join(self.selected_dir, "meu_arquivo.zip")
+                first_file = next(iter(self._files))  # Obtém o primeiro arquivo do set
+                archive_name = os.path.join(self.selected_dir, f"{first_file.stem}.zip")
                 if password == password_repeat:
                     compressor = ZipCompressor(
                         archive_name,
