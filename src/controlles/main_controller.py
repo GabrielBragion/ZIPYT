@@ -5,6 +5,7 @@ from ..models.compressor.gz_compressor import GzCompressor
 from ..models.encryptor.encryptor import Encryptor
 from ..models.compressor.zip_compressor import ZipCompressor
 from ..models.compressor.lzma_compressor import LzmaCompressor
+from ..models.compressor.bzip_compressor import Bzip2Compressor
 
 
 class MainController:
@@ -139,16 +140,17 @@ class MainController:
             if file_path.exists() and file_path not in self._files:
                 self._files.add(file_path)
                 self.view.list_files.addItem(file_path.name)
-                
+
         # Atualiza o diretório no campo de input_files com o diretório do primeiro arquivo
         if files:
             selected_dir = str(Path(files[0]).parent)
             self.view.input_files.setText(selected_dir)
-            self.selected_dir = selected_dir  # Atualiza o diretório selecionado para compressão
+            self.selected_dir = (
+                selected_dir  # Atualiza o diretório selecionado para compressão
+            )
 
         self._filesCount = len(self._files)
         self.view.update_file_count(self._filesCount)
-
 
     def load_files(self):
         init_dir = self.view.input_files.text() or str(Path.home())
@@ -217,6 +219,18 @@ class MainController:
                         encryptor = Encryptor(password, password_repeat)
                         encryptor.encrypt_file(lzma_archive_name)
                         os.remove(lzma_archive_name)
+                        
+                elif selected_compress == "BZIP2":
+                    bzip2_archive_name = f"{archive_name}.bz2"
+                    compressor = Bzip2Compressor(bzip2_archive_name)
+                    compressor.create_bzip2(archive_name)
+                    os.remove(archive_name)  # Remove o arquivo TAR original após criar o TAR.BZ2
+
+                    if len(password) > 0:
+                        encryptor = Encryptor(password, password_repeat)
+                        encryptor.encrypt_file(bzip2_archive_name)
+                        os.remove(bzip2_archive_name)  # Remove o arquivo TAR.BZ2 após criar o TAR.BZ2.ENC
+
 
             elif selected_format == "GZ":
                 for file in self._files:
@@ -253,6 +267,8 @@ class MainController:
                         encryptor = Encryptor(password, password_repeat)
                         encryptor.encrypt_file(lzma_file)
                         os.remove(lzma_file)
+                        
+            
 
             # Exclui os arquivos originais se a opção estiver marcada
             self.delete_original_files(self._files)
