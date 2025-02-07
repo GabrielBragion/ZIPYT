@@ -4,6 +4,7 @@ from ..models.compressor.tar_compressor import TarCompressor
 from ..models.compressor.gz_compressor import GzCompressor
 from ..models.encryptor.encryptor import Encryptor
 from ..models.compressor.zip_compressor import ZipCompressor
+from ..models.compressor.lzma_compressor import LzmaCompressor
 
 
 class MainController:
@@ -75,7 +76,6 @@ class MainController:
                 if index != -1:
                     self.view.select_compress.removeItem(index)
 
-
             # Volta a adicionar a opção Padrão que possa ter sido removida quando mudou o metodo
             self.view.select_compress.insertItem(0, "Padrão")
             self.view.select_compress.setCurrentIndex(0)
@@ -136,13 +136,19 @@ class MainController:
     def add_files(self, files):
         for file in files:
             file_path = Path(file)
-            if (
-                file_path.exists() and file_path not in self._files
-            ):  # Verifica se o arquivo existe e se já não foi adicionado
+            if file_path.exists() and file_path not in self._files:
                 self._files.add(file_path)
                 self.view.list_files.addItem(file_path.name)
+                
+        # Atualiza o diretório no campo de input_files com o diretório do primeiro arquivo
+        if files:
+            selected_dir = str(Path(files[0]).parent)
+            self.view.input_files.setText(selected_dir)
+            self.selected_dir = selected_dir  # Atualiza o diretório selecionado para compressão
+
         self._filesCount = len(self._files)
         self.view.update_file_count(self._filesCount)
+
 
     def load_files(self):
         init_dir = self.view.input_files.text() or str(Path.home())
@@ -180,7 +186,8 @@ class MainController:
 
             if selected_format == "TAR":
                 # Usa o diretório selecionado para criar o arquivo TAR
-                archive_name = os.path.join(self.selected_dir, "meu_arquivo.tar")
+                first_file = next(iter(self._files))  # Obtém o primeiro arquivo do set
+                archive_name = os.path.join(self.selected_dir, f"{first_file.stem}.tar")
                 compressor = TarCompressor(archive_name)
                 compressor.create_tar(list(self._files))
 
@@ -198,6 +205,18 @@ class MainController:
                         os.remove(
                             gz_archive_name
                         )  # Remove o arquivo TAR.GZ original após criar o TAR.GZ.ENC
+                elif selected_compress == "LZMA":
+                    lzma_archive_name = archive_name
+                    compressor = LzmaCompressor(archive_name)
+                    compressor.create_lzma(archive_name)
+                    os.remove(
+                        archive_name
+                    )  # Remove o arquivo TAR original após criar o GZ
+
+                    if len(password) > 0:
+                        encryptor = Encryptor(password, password_repeat)
+                        encryptor.encrypt_file(lzma_archive_name)
+                        os.remove(lzma_archive_name)
 
             elif selected_format == "GZ":
                 for file in self._files:
@@ -224,6 +243,16 @@ class MainController:
                     compressor.create_zip(list(self._files))
                 else:
                     self.view.show_message("Erro", "Palavras passes diferentes")
+
+            elif selected_format == "LZMA":
+                for file in self._files:
+                    compressor = LzmaCompressor(file)
+                    lzma_file = compressor.create_lzma(file)
+
+                    if len(password) > 0:
+                        encryptor = Encryptor(password, password_repeat)
+                        encryptor.encrypt_file(lzma_file)
+                        os.remove(lzma_file)
 
             # Exclui os arquivos originais se a opção estiver marcada
             self.delete_original_files(self._files)

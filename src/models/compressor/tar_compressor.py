@@ -8,15 +8,17 @@ class TarCompressor:
     def create_tar(self, files):
         """
         Cria um arquivo TAR com os arquivos fornecidos.
-        
+
         :param files: Lista de caminhos de arquivos a serem adicionados ao TAR.
         :return: Nome do arquivo TAR criado.
         """
         with tarfile.open(self.archive_name, 'w') as tar:
             for file in files:
-                if os.path.exists(file):
-                    # Adiciona o arquivo ao TAR com um nome relativo
-                    tar.add(file, arcname=os.path.basename(file))
-                else:
-                    print(f"Arquivo {file} não encontrado e será ignorado.")
+                try:
+                    if os.path.isfile(file):
+                        tar.add(file, arcname=os.path.basename(file))
+                    else:
+                        print(f"'{file}' não é um arquivo regular e será ignorado.")
+                except Exception as e:
+                    print(f"Erro ao adicionar '{file}': {e}")
         return self.archive_name
