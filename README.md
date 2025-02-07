@@ -28,11 +28,14 @@ O **ZIPYT** é uma aplicação desenvolvida com **PySide6** que permite **compac
    git clone https://github.com/seu-usuario/ZIPYT.git
    cd ZIPYT
 2. Crie um ambiente virtual (opcional, mas recomendado):
+   ```bash
    python -m venv venv
    source venv/bin/activate
 3. Instale as dependências:
+   ```bash
    pip install cryptography pyside6
 4. Execute o programa:
+   ```bash
    python main.py
 
 
