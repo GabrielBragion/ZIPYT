@@ -38,9 +38,3 @@ class ZipCompressor:
             return zipfile.ZIP_LZMA
         else:
             raise ValueError(f"Método de compressão desconhecido: {self.compression_method}")
-
-# Exemplo de uso
-if __name__ == "__main__":
-    compressor = ZipCompressor("meu_arquivo.zip", compression_method='deflate', compression_level=5, password="minha_senha")
-    arquivos = ["arquivo1.txt", "arquivo2.txt"]
-    compressor.create_zip(arquivos)

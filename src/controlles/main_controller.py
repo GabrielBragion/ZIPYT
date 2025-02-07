@@ -5,6 +5,7 @@ from ..models.compressor.gz_compressor import GzCompressor
 from ..models.encryptor.encryptor import Encryptor
 from ..models.compressor.zip_compressor import ZipCompressor
 
+
 class MainController:
     def __init__(self, view):
         self.view = view
@@ -16,7 +17,9 @@ class MainController:
         self.view.btn_load.clicked.connect(self.load_files)
         self.view.file_dropped.connect(self.add_files)
         self.view.select_method.currentTextChanged.connect(self.update_ui_controls)
-        self.view.select_compress.currentTextChanged.connect(self.check_secondary_combobox)
+        self.view.select_compress.currentTextChanged.connect(
+            self.check_secondary_combobox
+        )
         self.view.btn_exec.clicked.connect(self.compress_files)
 
     def update_ui_controls(self, selected_format):
@@ -159,19 +162,21 @@ class MainController:
 
         self.add_files(files)
 
-
     def compress_files(self):
         """
         Método para comprimir os arquivos selecionados.
         """
         try:
             if not self._files:
-                self.view.show_message("Erro", "Nenhum arquivo selecionado para compressão.")
+                self.view.show_message(
+                    "Erro", "Nenhum arquivo selecionado para compressão."
+                )
                 return
 
             selected_format = self.view.select_method.currentText()
             selected_compress = self.view.select_compress.currentText()
             password = self.view.input_password.text()
+            password_repeat = self.view.input_repeat.text()
             compression_level = self.view.slider_level.value()
 
             if selected_format == "TAR":
@@ -184,32 +189,42 @@ class MainController:
                     gz_archive_name = f"{archive_name}.gz"
                     compressor = GzCompressor(archive_name)
                     compressor.create_gz(archive_name)
-                    os.remove(archive_name)  # Remove o arquivo TAR original após criar o GZ
+                    os.remove(
+                        archive_name
+                    )  # Remove o arquivo TAR original após criar o GZ
 
-                    if password:
-                        encryptor = Encryptor(password)
+                    if len(password) > 0:
+                        encryptor = Encryptor(password, password_repeat)
                         encryptor.encrypt_file(gz_archive_name)
-                        os.remove(gz_archive_name)  # Remove o arquivo TAR.GZ original após criar o TAR.GZ.ENC
+                        os.remove(
+                            gz_archive_name
+                        )  # Remove o arquivo TAR.GZ original após criar o TAR.GZ.ENC
 
             elif selected_format == "GZ":
                 for file in self._files:
                     compressor = GzCompressor(file)
                     gz_file = compressor.create_gz(file)
 
-                    if password:
-                        encryptor = Encryptor(password)
+                    if len(password) > 0:
+                        encryptor = Encryptor(password, password_repeat)
                         encryptor.encrypt_file(gz_file)
-                        os.remove(gz_file)  # Remove o arquivo GZ original após criar o GZ.ENC
+                        os.remove(
+                            gz_file
+                        )  # Remove o arquivo GZ original após criar o GZ.ENC
 
             elif selected_format == "ZIP":
                 # Usa o diretório selecionado para criar o arquivo ZIP
                 archive_name = os.path.join(self.selected_dir, "meu_arquivo.zip")
-                compressor = ZipCompressor(archive_name, 
-                                           compression_method=selected_compress, 
-                                           compression_level=compression_level, 
-                                           password=password
-                                           )
-                compressor.create_zip(list(self._files))
+                if len(password) > 0 and password == password_repeat:
+                    compressor = ZipCompressor(
+                        archive_name,
+                        compression_method=selected_compress,
+                        compression_level=compression_level,
+                        password=password,
+                    )
+                    compressor.create_zip(list(self._files))
+                else:
+                    self.view.show_message("Erro", "Palavras passes diferentes")
 
             # Exclui os arquivos originais se a opção estiver marcada
             self.delete_original_files(self._files)
@@ -223,7 +238,9 @@ class MainController:
             self.view.show_message("Sucesso", "Arquivos comprimidos com sucesso!")
 
         except Exception as e:
-            self.view.show_message("Erro", f"Ocorreu um erro durante a compressão: {str(e)}")
+            self.view.show_message(
+                "Erro", f"Ocorreu um erro durante a compressão: {str(e)}"
+            )
 
     def delete_original_files(self, files):
         if self.view.checkbox_delete.isChecked():
@@ -235,11 +252,10 @@ class MainController:
                         "Erro", f"Não foi possível excluir o arquivo {file}: {str(e)}"
                     )
 
-    def encrypt_file(self, file):
-        # Criptografa o arquivo se uma senha for fornecida
-        password = self.view.input_password.text()
-        password_confirm = self.view.input_repeat.text()
-        
-        if password == password_confirm and password != "":
+    def encrypt_file(self, file, password, password_confirm):
+        # Criptografa o arquivo se uma senha for fornecid
+        if password == password_confirm:
             encryptor = Encryptor(password)
             encryptor.encrypt_file(file)
+        else:
+            self.view.show_message("Erro", "Palavras passes diferentes")
