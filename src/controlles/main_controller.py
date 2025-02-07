@@ -1,4 +1,7 @@
 from pathlib import Path
+import os
+from ..models.compressor.tar_compressor import TarCompressor
+from ..models.compressor.gz_compressor import GzCompressor
 
 class MainController:
     def __init__(self, view):
@@ -11,6 +14,7 @@ class MainController:
         self.view.btn_load.clicked.connect(self.load_files)
         self.view.file_dropped.connect(self.add_files)
         self.view.select_method.currentTextChanged.connect(self.update_ui_controls)
+        self.view.btn_exec.clicked.connect(self.compress_files)
 
     def update_ui_controls(self, selected_format):
         """
@@ -26,25 +30,27 @@ class MainController:
             self.view.slider_level.hide()
             self.view.label_level.hide()
             self.view.hide_layout(self.view.label_numbers)
-            
+
             # Habilita as label e select do tipo de compressao
             self.view.label_compress.show()
             self.view.select_compress.show()
-            
+
             # Remove opção Padrão que não é usada no TAR
             index = self.view.select_compress.findText("Padrão")
             if index != -1:
                 self.view.select_compress.removeItem(index)
-                
-            # Volta a adicionar a opção Nenhum que possa ter sido removida quando mudou o metodo    
+
+            # Volta a adicionar a opção Nenhum que possa ter sido removida quando mudou o metodo
             self.view.select_compress.insertItem(0, "Nenhum")
             self.view.select_compress.setCurrentIndex(0)
-            
+
             # Lida com a segunda opção do metodo de compressão (que pode ser escolhido no modo TAR ou ZIP)
-            self.view.select_compress.currentTextChanged.connect(self.check_secondary_combobox)
-            
+            self.view.select_compress.currentTextChanged.connect(
+                self.check_secondary_combobox
+            )
+
         elif selected_format == "ZIP":
-            
+
             # Habilita as labels e inputs nescessarios
             self.view.input_password.show()
             self.view.label_password.show()
@@ -55,45 +61,47 @@ class MainController:
             self.view.show_layout(self.view.label_numbers)
             self.view.label_compress.show()
             self.view.select_compress.show()
-            
+
             # Remove opção Nenhum que não é usada no ZIP
             index = self.view.select_compress.findText("Nenhum")
             if index != -1:
                 self.view.select_compress.removeItem(index)
-                
+
             # Volta a adicionar a opção Padrão que possa ter sido removida quando mudou o metodo
             self.view.select_compress.insertItem(0, "Padrão")
             self.view.select_compress.setCurrentIndex(0)
-            
+
             # Lida com a segunda opção do metodo de compressão (que pode ser escolhido no modo TAR ou ZIP)
-            self.view.select_compress.currentTextChanged.connect(self.check_secondary_combobox)
-            
+            self.view.select_compress.currentTextChanged.connect(
+                self.check_secondary_combobox
+            )
+
         elif selected_format == "GZ" or selected_format == "LZMA":
-            
+
             # Habilita as labels e inputs nescessarios
             self.view.input_password.show()
             self.view.label_password.show()
             self.view.input_repeat.show()
             self.view.label_repeat.show()
-            
+
             # Desabilita as labels e inputs desnecessarios
             self.view.slider_level.hide()
             self.view.label_level.hide()
             self.view.hide_layout(self.view.label_numbers)
             self.view.label_compress.hide()
             self.view.select_compress.hide()
-            
+
             # Remove a opção Nenhum pois sera adicionado no modo TAR
             index = self.view.select_compress.findText("Nenhum")
             if index != -1:
                 self.view.select_compress.removeItem(index)
-            
+
     def check_secondary_combobox(self, current_text):
         """
         Verifica a seleção do QComboBox secundário e exibe os campos de senha
         se a opção selecionada não for "Nenhum".
         """
-        # Habilita as labels e inputs nescessarios se o modo escolhido for 
+        # Habilita as labels e inputs nescessarios se o modo escolhido for
         # TAR e o modo de compressão for diferente de Nenhum
         if current_text != "Nenhum":
             self.view.input_password.show()
@@ -115,12 +123,6 @@ class MainController:
             self.view.label_level.hide()
             self.view.hide_layout(self.view.label_numbers)
 
-    def load_files(self):
-        init_dir = self.view.input_files.text() or str(Path.home())
-        files, _ = self.view.open_file_dialog(init_dir)
-
-        self.add_files(files)
-
     def add_files(self, files):
         for file in files:
             file_path = Path(file)
@@ -131,3 +133,61 @@ class MainController:
                 self.view.list_files.addItem(file_path.name)
         self._filesCount = len(self._files)
         self.view.update_file_count(self._filesCount)
+
+    def load_files(self):
+        init_dir = self.view.input_files.text() or str(Path.home())
+        self.view.input_files.setText(init_dir)  # Atualiza o input_files com o diretório inicial
+        files, _ = self.view.open_file_dialog(init_dir)
+
+        if files:
+            # Atualiza o input_files com o diretório dos arquivos selecionados
+            selected_dir = str(Path(files[0]).parent)
+            self.view.input_files.setText(selected_dir)
+
+            # Salva o diretório selecionado para uso posterior
+            self.selected_dir = selected_dir
+
+        self.add_files(files)
+
+    def compress_files(self):
+        """
+        Método para comprimir os arquivos selecionados.
+        """
+        try:
+            if not self._files:
+                self.view.show_message("Erro", "Nenhum arquivo selecionado para compressão.")
+                return
+
+            selected_format = self.view.select_method.currentText()
+            if selected_format == "TAR":
+                # Usa o diretório selecionado para criar o arquivo TAR
+                archive_name = os.path.join(self.selected_dir, "meu_arquivo.tar")
+                compressor = TarCompressor(archive_name)
+                compressor.create_tar(list(self._files))
+            elif selected_format == "GZ":
+                for file in self._files:
+                    compressor = GzCompressor(file)
+                    compressor.create_gz(file)
+            # Adicione lógica para outros formatos de compressão aqui
+
+            # Exclui os arquivos originais se a opção estiver marcada
+            self.delete_original_files(self._files)
+
+            # Reseta a view após a compressão
+            self.view.reset_view()
+            self._files = set()  # Limpa a lista de arquivos
+            self._filesCount = 0
+
+            # Mostra a mensagem de sucesso
+            self.view.show_message("Sucesso", "Arquivos comprimidos com sucesso!")
+            
+        except Exception as e:
+            self.view.show_message("Erro", f"Ocorreu um erro durante a compressão: {str(e)}")
+            
+    def delete_original_files(self, files):
+        if self.view.checkbox_delete.isChecked():
+            for file in files:
+                try:
+                    os.remove(file)
+                except Exception as e:
+                    self.view.show_message("Erro", f"Não foi possível excluir o arquivo {file}: {str(e)}")
