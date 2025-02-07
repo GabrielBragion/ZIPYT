@@ -46,8 +46,9 @@ class MainController:
             if index != -1:
                 self.view.select_compress.removeItem(index)
 
-            # Volta a adicionar a opção Nenhum que possa ter sido removida quando mudou o metodo
+            # Volta a adicionar a opções que possa ter sido removida quando mudou o metodo
             self.view.select_compress.insertItem(0, "Nenhum")
+            self.view.select_compress.insertItem(2, "GZIP")
             self.view.select_compress.setCurrentIndex(0)
 
             # Lida com a segunda opção do metodo de compressão (que pode ser escolhido no modo TAR ou ZIP)
@@ -69,14 +70,11 @@ class MainController:
             self.view.select_compress.show()
 
             # Remove opção Nenhum que não é usada no ZIP
-            index_nenhum = self.view.select_compress.findText("Nenhum")
-            index_gzip = self.view.select_compress.findText("GZIP")
+            for option in ["Nenhum", "GZIP"]:
+                index = self.view.select_compress.findText(option)
+                if index != -1:
+                    self.view.select_compress.removeItem(index)
 
-            if index_nenhum != -1:
-                self.view.select_compress.removeItem(index_nenhum)
-
-            if index_gzip != -1:
-                self.view.select_compress.removeItem(index_gzip)
 
             # Volta a adicionar a opção Padrão que possa ter sido removida quando mudou o metodo
             self.view.select_compress.insertItem(0, "Padrão")
@@ -102,10 +100,11 @@ class MainController:
             self.view.label_compress.hide()
             self.view.select_compress.hide()
 
-            # Remove a opção Nenhum pois sera adicionado no modo TAR
-            index = self.view.select_compress.findText("Nenhum")
-            if index != -1:
-                self.view.select_compress.removeItem(index)
+            # Remove a opções pois seram adicionadas no modo TAR
+            for option in ["Nenhum", "GZIP", "Padrão"]:
+                index = self.view.select_compress.findText(option)
+                if index != -1:
+                    self.view.select_compress.removeItem(index)
 
     def check_secondary_combobox(self, current_text):
         """
@@ -186,7 +185,7 @@ class MainController:
                 compressor.create_tar(list(self._files))
 
                 if selected_compress == "GZIP":
-                    gz_archive_name = f"{archive_name}.gz"
+                    gz_archive_name = archive_name
                     compressor = GzCompressor(archive_name)
                     compressor.create_gz(archive_name)
                     os.remove(
@@ -215,7 +214,7 @@ class MainController:
             elif selected_format == "ZIP":
                 # Usa o diretório selecionado para criar o arquivo ZIP
                 archive_name = os.path.join(self.selected_dir, "meu_arquivo.zip")
-                if len(password) > 0 and password == password_repeat:
+                if password == password_repeat:
                     compressor = ZipCompressor(
                         archive_name,
                         compression_method=selected_compress,
