@@ -15,7 +15,7 @@
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -23,7 +23,7 @@
   <property name="minimumSize">
    <size>
     <width>290</width>
-    <height>460</height>
+    <height>200</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -43,6 +43,76 @@
   <property name="windowTitle">
    <string>ZIPYT</string>
   </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="sizeConstraint">
+    <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="QFrame" name="drag_and_drop">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="acceptDrops">
+      <bool>true</bool>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgba(0, 0, 0, 0.7);  /* Transparência */
+border: 2px dashed #00BFFF;           /* Borda tracejada azul */</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QLabel" name="label_drag_and_drop">
+        <property name="font">
+         <font>
+          <pointsize>18</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">border: none;</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Shape::NoFrame</enum>
+        </property>
+        <property name="text">
+         <string>Solte o arquivo aqui</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
   <widget class="QLabel" name="label_files">
    <property name="geometry">
     <rect>
@@ -53,7 +123,7 @@
     </rect>
    </property>
    <property name="sizePolicy">
-    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
      <horstretch>0</horstretch>
      <verstretch>0</verstretch>
     </sizepolicy>
@@ -71,6 +141,12 @@
      <height>30</height>
     </rect>
    </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="minimumSize">
     <size>
      <width>0</width>
@@ -87,11 +163,17 @@
   <widget class="QPushButton" name="btn_load">
    <property name="geometry">
     <rect>
-     <x>210</x>
+     <x>204</x>
      <y>30</y>
-     <width>75</width>
+     <width>80</width>
      <height>30</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="minimumSize">
     <size>
@@ -135,6 +217,12 @@
      <height>30</height>
     </rect>
    </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="minimumSize">
     <size>
      <width>0</width>
@@ -159,6 +247,12 @@
      <width>271</width>
      <height>30</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="minimumSize">
     <size>
@@ -191,11 +285,17 @@
   <widget class="QComboBox" name="select_method">
    <property name="geometry">
     <rect>
-     <x>210</x>
+     <x>202</x>
      <y>120</y>
-     <width>71</width>
+     <width>82</width>
      <height>30</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="minimumSize">
     <size>
@@ -230,53 +330,6 @@
     </property>
    </item>
   </widget>
-  <widget class="QComboBox" name="select_compress">
-   <property name="geometry">
-    <rect>
-     <x>200</x>
-     <y>160</y>
-     <width>85</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>0</width>
-     <height>30</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>16777215</width>
-     <height>30</height>
-    </size>
-   </property>
-   <item>
-    <property name="text">
-     <string>Nenhum</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
-     <string>Padrão</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
-     <string>BZIP2</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
-     <string>GZIP</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
-     <string>LZMA</string>
-    </property>
-   </item>
-  </widget>
   <widget class="QLabel" name="label_compress">
    <property name="geometry">
     <rect>
@@ -285,6 +338,12 @@
      <width>181</width>
      <height>30</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="minimumSize">
     <size>
@@ -311,6 +370,12 @@
      <height>30</height>
     </rect>
    </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="minimumSize">
     <size>
      <width>0</width>
@@ -335,6 +400,12 @@
      <width>271</width>
      <height>30</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="minimumSize">
     <size>
@@ -561,6 +632,12 @@
      <height>30</height>
     </rect>
    </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="minimumSize">
     <size>
      <width>0</width>
@@ -589,6 +666,12 @@
      <height>30</height>
     </rect>
    </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="minimumSize">
     <size>
      <width>0</width>
@@ -613,6 +696,12 @@
      <width>271</width>
      <height>30</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="minimumSize">
     <size>
@@ -648,6 +737,12 @@
      <height>30</height>
     </rect>
    </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="minimumSize">
     <size>
      <width>0</width>
@@ -672,6 +767,12 @@
      <width>166</width>
      <height>30</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="minimumSize">
     <size>
@@ -698,6 +799,12 @@
      <height>30</height>
     </rect>
    </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="minimumSize">
     <size>
      <width>0</width>
@@ -717,60 +824,6 @@
     <enum>QLineEdit::EchoMode::PasswordEchoOnEdit</enum>
    </property>
   </widget>
-  <widget class="QFrame" name="drag_and_drop">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>291</width>
-     <height>461</height>
-    </rect>
-   </property>
-   <property name="acceptDrops">
-    <bool>true</bool>
-   </property>
-   <property name="autoFillBackground">
-    <bool>false</bool>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">background-color: rgba(0, 0, 0, 0.7);  /* Transparência */
-border: 2px dashed #00BFFF;           /* Borda tracejada azul */</string>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::Shape::StyledPanel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Shadow::Raised</enum>
-   </property>
-   <widget class="QLabel" name="label_drag_and_drop">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>200</y>
-      <width>231</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>18</pointsize>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">border: none;</string>
-    </property>
-    <property name="text">
-     <string>Solte o arquivo aqui</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignmentFlag::AlignCenter</set>
-    </property>
-   </widget>
-  </widget>
   <widget class="QListWidget" name="list_files">
    <property name="geometry">
     <rect>
@@ -779,6 +832,12 @@ border: 2px dashed #00BFFF;           /* Borda tracejada azul */</string>
      <width>191</width>
      <height>50</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="minimumSize">
     <size>
@@ -797,10 +856,16 @@ border: 2px dashed #00BFFF;           /* Borda tracejada azul */</string>
    <property name="geometry">
     <rect>
      <x>210</x>
-     <y>80</y>
+     <y>70</y>
      <width>71</width>
      <height>16</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="font">
     <font>
@@ -808,7 +873,7 @@ border: 2px dashed #00BFFF;           /* Borda tracejada azul */</string>
     </font>
    </property>
    <property name="text">
-    <string>Nº Arquivos</string>
+    <string>Nº Arquivos:</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_file_count">
@@ -829,13 +894,66 @@ border: 2px dashed #00BFFF;           /* Borda tracejada azul */</string>
     <string/>
    </property>
   </widget>
+  <widget class="QComboBox" name="select_compress">
+   <property name="geometry">
+    <rect>
+     <x>202</x>
+     <y>160</y>
+     <width>82</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>30</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>30</height>
+    </size>
+   </property>
+   <item>
+    <property name="text">
+     <string>Nenhum</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Padrão</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>BZIP2</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>GZIP</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>LZMA</string>
+    </property>
+   </item>
+  </widget>
+  <zorder>drag_and_drop</zorder>
   <zorder>label_files</zorder>
   <zorder>input_files</zorder>
   <zorder>btn_load</zorder>
   <zorder>label_method</zorder>
   <zorder>slider_level</zorder>
   <zorder>select_method</zorder>
-  <zorder>select_compress</zorder>
   <zorder>label_compress</zorder>
   <zorder>label_level</zorder>
   <zorder>layoutWidget</zorder>
@@ -848,7 +966,6 @@ border: 2px dashed #00BFFF;           /* Borda tracejada azul */</string>
   <zorder>list_files</zorder>
   <zorder>label_total_files</zorder>
   <zorder>label_file_count</zorder>
-  <zorder>drag_and_drop</zorder>
  </widget>
  <resources/>
  <connections/>

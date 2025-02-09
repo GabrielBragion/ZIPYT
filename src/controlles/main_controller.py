@@ -1,3 +1,10 @@
+"""
+TODO
+- se ja tiver um arquivo com o mesmo nome do diretorio qunado estiver criando, adicionar (1) e ir incrementando
+- corrigir descompactador LZMA
+- 
+"""
+
 from pathlib import Path
 import os
 
@@ -181,13 +188,32 @@ class MainController:
         self.add_files(files)
 
     def handle_action(self):
-        if all(
-            file.suffix in [".tar", ".gz", ".zip", ".lzma", ".bz2"]
-            for file in self._files
-        ):
-            self.decompress_files()
+        # Primeiro, verifica se todos os arquivos têm o sufixo .enc
+        enc_files = [file for file in self._files if file.suffix == ".enc"]
+
+        if enc_files:
+            password = self.view.input_password.text()
+            password_confirm = self.view.input_repeat.text()
+
+            # Verifica se as senhas coincidem
+            if password != password_confirm:
+                self.view.show_message("Erro", "As senhas não coincidem.")
+                return
+
+            # Descriptografa todos os arquivos com sufixo .enc
+            try:
+                for file in enc_files:
+                    self.decrypt_file(file, password, password_confirm)
+                self.view.show_message("Sucesso", "Arquivos descriptografados com sucesso!")
+            except Exception as e:
+                self.view.show_message("Erro", f"Erro ao descriptografar: {str(e)}")
+
+        # Verifica se os arquivos não são criptografados (não possuem o sufixo .enc)
+        if all(file.suffix in [".tar", ".gz", ".zip", ".lzma", ".bz2"] for file in self._files):
+            self.decompress_files()  # Caso os arquivos não sejam .enc, descompacta
         else:
-            self.compress_files()
+            self.compress_files()  # Caso contrário, realiza a compressão
+
 
     def decompress_files(self):
         try:
@@ -255,7 +281,7 @@ class MainController:
                     )  # Remove o arquivo TAR original após criar o GZ
 
                     if len(password) > 0:
-                        encryptor = Encryptor(password, password_repeat)
+                        encryptor = Encryptor(password)
                         encryptor.encrypt_file(gz_archive_name)
                         os.remove(
                             gz_archive_name
@@ -269,7 +295,7 @@ class MainController:
                     )  # Remove o arquivo TAR original após criar o GZ
 
                     if len(password) > 0:
-                        encryptor = Encryptor(password, password_repeat)
+                        encryptor = Encryptor(password)
                         encryptor.encrypt_file(lzma_archive_name)
                         os.remove(lzma_archive_name)
 
@@ -282,7 +308,7 @@ class MainController:
                     )  # Remove o arquivo TAR original após criar o TAR.BZ2
 
                     if len(password) > 0:
-                        encryptor = Encryptor(password, password_repeat)
+                        encryptor = Encryptor(password)
                         encryptor.encrypt_file(bzip2_archive_name)
                         os.remove(
                             bzip2_archive_name
@@ -294,7 +320,7 @@ class MainController:
                     gz_file = compressor.create_gz(file)
 
                     if len(password) > 0:
-                        encryptor = Encryptor(password, password_repeat)
+                        encryptor = Encryptor(password)
                         encryptor.encrypt_file(gz_file)
                         os.remove(
                             gz_file
@@ -356,6 +382,30 @@ class MainController:
             encryptor.encrypt_file(file)
         else:
             self.view.show_message("Erro", "Palavras passes diferentes")
+            
+    def decrypt_file(self, file, password, password_confirm):
+        """
+        Descriptografa o arquivo se ele tiver o sufixo .enc.
+        """
+        if file.suffix == ".enc":
+            if password == password_confirm:
+                try:
+                    # Chama a função do Encryptor para descriptografar o arquivo
+                    decryptor = Encryptor(password)
+                    decrypted_file = decryptor.decrypt_file(file)  # Descriptografa o arquivo
+
+                    # Após descriptografar, o arquivo será salvo com a extensão original
+                    new_file_name = file.stem  # Removendo a extensão .enc
+                    decrypted_file.rename(file.with_name(new_file_name))  # Renomeia o arquivo descriptografado
+
+                    self.view.show_message("Sucesso", f"Arquivo {file.name} foi descriptografado com sucesso!")
+                except Exception as e:
+                    self.view.show_message("Erro", f"Erro ao descriptografar {file.name}: {str(e)}")
+            else:
+                self.view.show_message("Erro", "As senhas não coincidem.")
+        else:
+            self.view.show_message("Erro", "Este arquivo não está criptografado.")
+
 
     def reset_view_after_sucess(self):
         self.view.reset_view()
