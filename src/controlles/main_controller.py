@@ -1,11 +1,22 @@
 from pathlib import Path
 import os
+
+# Compressor
 from ..models.compressor.tar_compressor import TarCompressor
 from ..models.compressor.gz_compressor import GzCompressor
-from ..models.encryptor.encryptor import Encryptor
 from ..models.compressor.zip_compressor import ZipCompressor
 from ..models.compressor.lzma_compressor import LzmaCompressor
 from ..models.compressor.bzip_compressor import Bzip2Compressor
+
+# Decompressor
+from ..models.decompressor.tar_decompressor import TarDecompressor
+from ..models.decompressor.zip_decompressor import ZipDecompressor
+from ..models.decompressor.gz_decompressor import GZDecompressor
+from ..models.decompressor.bzip_decompressor import Bzip2Decompressor
+from ..models.decompressor.lzma_decompressor import LZMADecompressor
+
+# Encryptor
+from ..models.encryptor.encryptor import Encryptor
 
 
 class MainController:
@@ -22,7 +33,7 @@ class MainController:
         self.view.select_compress.currentTextChanged.connect(
             self.check_secondary_combobox
         )
-        self.view.btn_exec.clicked.connect(self.compress_files)
+        self.view.btn_exec.clicked.connect(self.handle_action)
 
     def update_ui_controls(self, selected_format):
         """
@@ -169,6 +180,48 @@ class MainController:
 
         self.add_files(files)
 
+    def handle_action(self):
+        if all(
+            file.suffix in [".tar", ".gz", ".zip", ".lzma", ".bz2"]
+            for file in self._files
+        ):
+            self.decompress_files()
+        else:
+            self.compress_files()
+
+    def decompress_files(self):
+        try:
+            for file in self._files:
+                if file.suffix == ".tar":
+                    decompressor = TarDecompressor(file)
+                    decompressor.extract_tar()
+                elif file.suffix == ".gz":
+                    decompressor = GZDecompressor(file)
+                    decompressor.extract_gz()
+                elif file.suffix == ".zip":
+                    decompressor = ZipDecompressor(file)
+                    decompressor.extract_zip()
+                elif file.suffix == ".lzma":
+                    decompressor = LZMADecompressor(file)
+                    decompressor.extract_lzma()
+                elif file.suffix == ".bz2":
+                    decompressor = Bzip2Decompressor(file)
+                    decompressor.extract_bzip2()
+                else:
+                    self.view.show_message(
+                        "Erro", f"Formato não suportado: {file.name}"
+                    )
+
+            self.view.show_message("Sucesso", "Arquivos descompactados com sucesso!")
+
+            # Exclui os arquivos originais se a opção estiver marcada
+            self.delete_original_files(self._files)
+
+            self.reset_view_after_sucess()
+
+        except Exception as e:
+            self.view.show_message("Erro", f"Erro ao descompactar: {str(e)}")
+
     def compress_files(self):
         """
         Método para comprimir os arquivos selecionados.
@@ -219,18 +272,21 @@ class MainController:
                         encryptor = Encryptor(password, password_repeat)
                         encryptor.encrypt_file(lzma_archive_name)
                         os.remove(lzma_archive_name)
-                        
+
                 elif selected_compress == "BZIP2":
                     bzip2_archive_name = f"{archive_name}.bz2"
                     compressor = Bzip2Compressor(bzip2_archive_name)
                     compressor.create_bzip2(archive_name)
-                    os.remove(archive_name)  # Remove o arquivo TAR original após criar o TAR.BZ2
+                    os.remove(
+                        archive_name
+                    )  # Remove o arquivo TAR original após criar o TAR.BZ2
 
                     if len(password) > 0:
                         encryptor = Encryptor(password, password_repeat)
                         encryptor.encrypt_file(bzip2_archive_name)
-                        os.remove(bzip2_archive_name)  # Remove o arquivo TAR.BZ2 após criar o TAR.BZ2.ENC
-
+                        os.remove(
+                            bzip2_archive_name
+                        )  # Remove o arquivo TAR.BZ2 após criar o TAR.BZ2.ENC
 
             elif selected_format == "GZ":
                 for file in self._files:
@@ -268,16 +324,12 @@ class MainController:
                         encryptor = Encryptor(password, password_repeat)
                         encryptor.encrypt_file(lzma_file)
                         os.remove(lzma_file)
-                        
-            
 
             # Exclui os arquivos originais se a opção estiver marcada
             self.delete_original_files(self._files)
 
             # Reseta a view após a compressão
-            self.view.reset_view()
-            self._files = set()  # Limpa a lista de arquivos
-            self._filesCount = 0
+            self.reset_view_after_sucess()
 
             # Mostra a mensagem de sucesso
             self.view.show_message("Sucesso", "Arquivos comprimidos com sucesso!")
@@ -304,3 +356,8 @@ class MainController:
             encryptor.encrypt_file(file)
         else:
             self.view.show_message("Erro", "Palavras passes diferentes")
+
+    def reset_view_after_sucess(self):
+        self.view.reset_view()
+        self._files = set()  # Limpa a lista de arquivos
+        self._filesCount = 0
