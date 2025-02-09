@@ -1,4 +1,4 @@
-# 📦 Compactador/Encriptador ZIPYT
+# 📦 Compactador/Descompactador/Encriptador ZIPYT
 
 O **ZIPYT** é uma aplicação desenvolvida com **PySide6** que permite **compactar/descompactar** e **encriptar/desencriptar** arquivos de forma simples e eficiente.
 
