@@ -2,7 +2,9 @@
 TODO
 - se ja tiver um arquivo com o mesmo nome do diretorio qunado estiver criando, adicionar (1) e ir incrementando
 - corrigir descompactador LZMA
-- 
+- corrigir encriptacao e decriptacao
+- acrescentar logica para desabilitar btns
+
 """
 
 from pathlib import Path
