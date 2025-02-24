@@ -24,6 +24,7 @@ class Window(QWidget, Ui_Window):
         self.slider_level.hide()  # Oculta a label de números
         self.label_level.hide()  # Oculta a label de nível de compressão
         self.hide_layout(self.label_numbers)  # Oculta os números
+        self.btn_exec.setDisabled(True)
 
     def _setup_UI(self):
         self.setupUi(self)

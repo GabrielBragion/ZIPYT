@@ -3,8 +3,7 @@ TODO
 - se ja tiver um arquivo com o mesmo nome do diretorio qunado estiver criando, adicionar (1) e ir incrementando
 - corrigir descompactador LZMA
 - corrigir encriptacao e decriptacao
-- acrescentar logica para desabilitar btns
-
+- refatorar tudo e tirar todo esses trechos de codigo repetidos
 """
 
 from pathlib import Path
@@ -171,6 +170,7 @@ class MainController:
 
         self._filesCount = len(self._files)
         self.view.update_file_count(self._filesCount)
+        self.update_interface_based_type_file()
 
     def load_files(self):
         init_dir = self.view.input_files.text() or str(Path.home())
@@ -385,31 +385,54 @@ class MainController:
         else:
             self.view.show_message("Erro", "Palavras passes diferentes")
             
-    def decrypt_file(self, file, password, password_confirm):
+    def decrypt_file(self, file):
         """
-        Descriptografa o arquivo se ele tiver o sufixo .enc.
+        Solicita a senha ao usuário e tenta descriptografar o arquivo.
         """
         if file.suffix == ".enc":
-            if password == password_confirm:
-                try:
-                    # Chama a função do Encryptor para descriptografar o arquivo
-                    decryptor = Encryptor(password)
-                    decrypted_file = decryptor.decrypt_file(file)  # Descriptografa o arquivo
+            password = self.view.input_password.text()
+            try:
+                decryptor = Encryptor(password)
+                decrypted_file = decryptor.decrypt_file(file)  # Chama a função correta
 
-                    # Após descriptografar, o arquivo será salvo com a extensão original
-                    new_file_name = file.stem  # Removendo a extensão .enc
-                    decrypted_file.rename(file.with_name(new_file_name))  # Renomeia o arquivo descriptografado
+                self.view.show_message("Sucesso", f"Arquivo {file.name} foi descriptografado com sucesso!")
 
-                    self.view.show_message("Sucesso", f"Arquivo {file.name} foi descriptografado com sucesso!")
-                except Exception as e:
-                    self.view.show_message("Erro", f"Erro ao descriptografar {file.name}: {str(e)}")
-            else:
-                self.view.show_message("Erro", "As senhas não coincidem.")
+            except ValueError:  # Se a senha estiver errada, o Encryptor pode lançar um erro
+                self.view.show_message("Erro", "Senha incorreta!")
+
+            except Exception as e:
+                self.view.show_message("Erro", f"Erro ao descriptografar {file.name}: {str(e)}")
+
         else:
             self.view.show_message("Erro", "Este arquivo não está criptografado.")
+
 
 
     def reset_view_after_sucess(self):
         self.view.reset_view()
         self._files = set()  # Limpa a lista de arquivos
         self._filesCount = 0
+        self.view.btn_exec.setText("Executar")
+        self.view.btn_exec.setDisabled(True)
+        self.view.select_method.show()
+        self.view.select_compress.show()
+        self.view.label_method.show()
+        self.view.label_compress.show()
+
+    def update_interface_based_type_file(self):
+        """
+        Atualiza o texto do botão de execução com base no tipo de arquivo selecionado.
+        """
+
+        self.view.btn_exec.setDisabled(False)
+        # Verifica se todos os arquivos são de formatos compactados
+        if all(file.suffix in [".tar", ".gz", ".zip", ".lzma", ".bz2"] for file in self._files):
+            self.view.btn_exec.setText("Descompactar")
+            self.view.select_method.hide()
+            self.view.select_compress.hide()
+            self.view.label_method.hide()
+            self.view.label_compress.hide()
+        elif all(file.suffix in [".enc"] for file in self._files):
+            self.view.btn_exec.setText("Desencriptar")
+        else:
+            self.view.btn_exec.setText("Compactar")

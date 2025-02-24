@@ -5,6 +5,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
 import os
 
+
 class Encryptor:
     def __init__(self, password):
         self.password = password.encode()  # Converte a senha para bytes
@@ -17,7 +18,7 @@ class Encryptor:
             length=32,
             salt=salt,
             iterations=100000,
-            backend=self.backend
+            backend=self.backend,
         )
         return kdf.derive(self.password)
 
@@ -30,35 +31,43 @@ class Encryptor:
         encryptor = cipher.encryptor()
         padder = padding.PKCS7(algorithms.AES.block_size).padder()
 
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             data = f.read()
 
         padded_data = padder.update(data) + padder.finalize()
         encrypted_data = encryptor.update(padded_data) + encryptor.finalize()
 
         encrypted_file_path = f"{file_path}.enc"
-        with open(encrypted_file_path, 'wb') as f:
+        with open(encrypted_file_path, "wb") as f:
             f.write(salt + iv + encrypted_data)
 
         return encrypted_file_path
 
+
     def decrypt_file(self, encrypted_file_path):
-        # Descriptografa o arquivo fornecido
-        with open(encrypted_file_path, 'rb') as f:
-            salt = f.read(16)  # Lê o salt
-            iv = f.read(16)  # Lê o IV
-            encrypted_data = f.read()
+        """
+        Descriptografa um arquivo e verifica se a senha está correta.
+        """
+        try:
+            with open(encrypted_file_path, "rb") as f:
+                salt = f.read(16)  # Lê o salt
+                iv = f.read(16)  # Lê o IV
+                encrypted_data = f.read()
 
-        key = self.derive_key(salt)
-        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=self.backend)
-        decryptor = cipher.decryptor()
-        unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
+            key = self.derive_key(salt)  # Deriva a chave com a senha fornecida
+            cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=self.backend)
+            decryptor = cipher.decryptor()
+            unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
 
-        decrypted_padded_data = decryptor.update(encrypted_data) + decryptor.finalize()
-        decrypted_data = unpadder.update(decrypted_padded_data) + unpadder.finalize()
+            decrypted_padded_data = decryptor.update(encrypted_data) + decryptor.finalize()
+            decrypted_data = unpadder.update(decrypted_padded_data) + unpadder.finalize()
 
-        decrypted_file_path = encrypted_file_path.replace('.enc', '')
-        with open(decrypted_file_path, 'wb') as f:
-            f.write(decrypted_data)
+            decrypted_file_path = encrypted_file_path.replace(".enc", "")
 
-        return decrypted_file_path
+            with open(decrypted_file_path, "wb") as f:
+                f.write(decrypted_data)
+
+            return decrypted_file_path  # Retorna o caminho do arquivo descriptografado
+
+        except ValueError:
+            raise ValueError("Senha incorreta!")  # Erro será tratado no MainController
